@@ -3,7 +3,7 @@
 
 using namespace std;
 
-const int N = 200; // matrix size
+const int N = 100; // matrix size
 double b[N][N], col_sum[N];
 double a[N];
 void init(int n) // generate a N*N matrix
@@ -27,14 +27,23 @@ int main()
 
     // start time
     QueryPerformanceCounter((LARGE_INTEGER *)&head);
-    for(int p=1;p<=200;p++){
+    for(int p=1;p<=518;p++){
     for(int i = 0; i < N; i++)
         {col_sum[i] = 0.0;}
-    for (int i = 0; i < N; i++)
-    {
-        for (int j = 0; j < N; j++)
-        {
-            col_sum[i] += b[j][i]*a[j];
+    for (int i = 0;i<N; i+=5){
+        for (int j = 0; j < N; j++){
+            if(i<N-4){
+                col_sum[i] += b[j][i]*a[j];
+                col_sum[i+1] += b[j][i+1]*a[j];
+                col_sum[i+2] += b[j][i+2]*a[j];
+                col_sum[i+3] += b[j][i+3]*a[j];
+                col_sum[i+4] += b[j][i+4]*a[j];
+            }
+            else{
+                for(int k=i;k<N;k++){
+                  col_sum[k]+=b[j][k]*a[j];  
+                }
+            }
         }
     }
     }

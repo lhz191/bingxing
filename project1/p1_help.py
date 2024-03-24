@@ -10,7 +10,7 @@ ws = wb.active
 file_path = "p1_data.xlsx"
 
 # 设置矩阵大小
-n = 200
+n = 3000
 
 # 写入数据到工作表
 for i in range(n):
