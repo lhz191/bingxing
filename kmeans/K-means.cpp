@@ -145,40 +145,61 @@ data[i].dimensions[j] = static_cast<float>(i + 1);
 }
 }
 }
+#include <stdio.h>
+#include <windows.h>
+#include <sysinfoapi.h>
 int main() {
-int n = 1000, m = 10, k = 5;
-std::vector<Node> data;
+    int n = 1000, m = 10, k = 5;
+    std::vector<Node> data;
 
-// 生成随机数据点
-// std::random_device rd;
-// std::mt19937 gen(rd());
-// std::normal_distribution<float> distribution(0.0f, 1.0f);
-// for (Node& node : data) {
-//     node.dimensions.resize(m);
-//     for (float& dim : node.dimensions) {
-//         dim = distribution(gen);
-//     }
-// }
+    // 生成随机数据点
+    // std::random_device rd;
+    // std::mt19937 gen(rd());
+    // std::normal_distribution<float> distribution(0.0f, 1.0f);
+    // for (Node& node : data) {
+    //     node.dimensions.resize(m);
+    //     for (float& dim : node.dimensions) {
+    //         dim = distribution(gen);
+    //     }
+    // }
 
-generateStructuredData(data, n, m);
-// 输出 data 容器中的数据
-std::cout << "Generated data:\n";
-for (const auto& node : data) {
-    std::cout << "Node: ";
-    for (float dim : node.dimensions) {
-        std::cout << dim << " ";
+    generateStructuredData(data, n, m);
+    // 输出 data 容器中的数据
+    std::cout << "Generated data:\n";
+    for (const auto& node : data) {
+        std::cout << "Node: ";
+        for (float dim : node.dimensions) {
+            std::cout << dim << " ";
+        }
+        std::cout << "\n";
     }
-    std::cout << "\n";
-}
+    FILETIME start_time, end_time;
+    ULARGE_INTEGER start_time_us, end_time_us;
+    // auto start_time = std::chrono::high_resolution_clock::now();
+    // for(int p=1;p<=100;p++){
+    // KMeans(k, data, n, m);
+    // }
+    // auto end_time = std::chrono::high_resolution_clock::now();
+    // auto elapsed_time = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_tim
 
-auto start_time = std::chrono::high_resolution_clock::now();
-for(int p=1;p<=100;p++){
-KMeans(k, data, n, m);
-}
-auto end_time = std::chrono::high_resolution_clock::now();
-auto elapsed_time = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count();
+    // std::cout << "K-Means algorithm execution time: " << elapsed_time << " ms" << std::endl;
+    GetSystemTimePreciseAsFileTime(&start_time);
 
-std::cout << "K-Means algorithm execution time: " << elapsed_time << " ms" << std::endl;
+    KMeans(k, data, n, m);
+    // 获取结束时间
+    GetSystemTimePreciseAsFileTime(&end_time);
 
-return 0;
+    // 计算执行时间
+    start_time_us.LowPart = start_time.dwLowDateTime;
+    start_time_us.HighPart = start_time.dwHighDateTime;
+    end_time_us.LowPart = end_time.dwLowDateTime;
+    end_time_us.HighPart = end_time.dwHighDateTime;
+
+    ULONGLONG elapsed_time = end_time_us.QuadPart - start_time_us.QuadPart;
+    ULONGLONG elapsed_seconds = elapsed_time / 10000000;
+    ULONGLONG elapsed_nanoseconds = (elapsed_time % 10000000) * 100;
+
+    printf("%llu.%09llu seconds\n", elapsed_seconds, elapsed_nanoseconds);
+
+    return 0;
 }
