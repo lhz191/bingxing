@@ -132,17 +132,18 @@ for (int i = 0; i < k; i++) {
         std::cout << dim << " ";
     }
     std::cout << std::endl;
-}
-}
-}
+      } 
+    }
+  }
 }
 void generateStructuredData(std::vector<Node>& data, int n, int m) {
-data.resize(n);
-for (int i = 0; i < n; i++) {
-data[i].dimensions.resize(m);
-for (int j = 0; j < m; j++) {
-data[i].dimensions[j] = static_cast<float>(i + 1);
-}
+         data.resize(n);
+for (int i = 0; i < n; i++) 
+{
+    data[i].dimensions.resize(m);
+    for (int j = 0; j < m; j++) { 
+       data[i].dimensions[j] = static_cast<float>(i + 1);
+    }
 }
 }
 #include <stdio.h>
