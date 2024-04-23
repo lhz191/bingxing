@@ -131,7 +131,7 @@ void generateStructuredData(std::vector<Node>& data, int n, int m) {
 #include <stdio.h>
 #include <time.h>
 int main() {
-    int n = 1000, m = 10, k = 5;
+    int n = 100, m = 10, k = 5;
     std::vector<Node> data;
 
     // 生成随机数据点
