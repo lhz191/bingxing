@@ -15,56 +15,60 @@ struct Node {
     vector<float> dimensions;
 };
 
-// SIMD 版本的计算距离函数
+// AVX 版本的计算距离函数
 inline float VectorizedDistance(const Node& x, const Node& z, int n) {
-    __m128 sum = _mm_setzero_ps();
-    for (int i = 0; i < n; i += 4) {
-        __m128 x_vec = _mm_loadu_ps(&x.dimensions[i]);
-        __m128 z_vec = _mm_loadu_ps(&z.dimensions[i]);
-        __m128 diff = _mm_sub_ps(x_vec, z_vec);
-        __m128 squared = _mm_mul_ps(diff, diff);
-        sum = _mm_add_ps(sum, squared);
+    __m256 sum = _mm256_setzero_ps();
+    for (int i = 0; i < n; i += 8) {
+        __m256 x_vec = _mm256_loadu_ps(&x.dimensions[i]);
+        __m256 z_vec = _mm256_loadu_ps(&z.dimensions[i]);
+        __m256 diff = _mm256_sub_ps(x_vec, z_vec);
+        __m256 squared = _mm256_mul_ps(diff, diff);
+        sum = _mm256_add_ps(sum, squared);
     }
-    float result = _mm_cvtss_f32(_mm_sqrt_ps(_mm_hadd_ps(_mm_hadd_ps(sum, sum), sum)));
+    __m128 low = _mm256_castps256_ps128(sum);
+    __m128 high = _mm256_extractf128_ps(sum, 1);
+    __m128 total = _mm_add_ps(low, high);
+    total = _mm_hadd_ps(total, total);
+    total = _mm_hadd_ps(total, total);
+    float result = _mm_cvtss_f32(_mm_sqrt_ps(total));
     return result;
 }
 
-// SIMD 版本的更新簇中心函数
+// AVX 版本的更新簇中心函数
 void VectorizedUpdateClusterCenter(const std::vector<Node>& data, const std::vector<int>& idx,
           std::vector<Node>& centers, int k, int n, int m) {
     for (int j = 0; j < k; j++) {
-        __m128 sum[m];
+        __m256 sum[m];
         for (int d = 0; d < m; d++) {
-            sum[d] = _mm_setzero_ps();
+            sum[d] = _mm256_setzero_ps();
         }
         int count = 0;
-        for (int i = 0; i < n - (n % 4); i += 4) {
-            __m128 mask = _mm_cmpeq_ps(_mm_load_ps(reinterpret_cast<const float*>(&idx[i])),
-            _mm_set1_ps(static_cast<float>(j)));
-            for (int d = 0; d < m; d++) {//这个函数多个地方可以嵌套simd优化，后面展开讨论
-                __m128 data_vec = _mm_and_ps(_mm_loadu_ps(&data[i].dimensions[d]), mask);
-                sum[d] = _mm_add_ps(sum[d], data_vec);
+        for (int i = 0; i < n - (n % 8); i += 8) {
+            __m256 mask = _mm256_castsi256_ps(_mm256_cmpeq_epi32(_mm256_loadu_si256(reinterpret_cast<const __m256i*>(&idx[i])),
+                                                                 _mm256_set1_epi32(j)));
+            for (int d = 0; d < m; d++) {
+                __m256 data_vec = _mm256_and_ps(_mm256_loadu_ps(&data[i].dimensions[d]), mask);
+                sum[d] = _mm256_add_ps(sum[d], data_vec);
             }
-            count += _mm_movemask_ps(mask);
+            count += _mm256_movemask_ps(mask);
         }
-        // 处理最后几个不足 4 个的数据
-        for (int i = n - (n % 4); i < n; i++) {
+        // 处理最后几个不足 8 个的数据
+        for (int i = n - (n % 8); i < n; i++) {
             if (idx[i] == j) {
                 for (int d = 0; d < m; d++) {
-                    sum[d] = _mm_add_ps(sum[d], _mm_set1_ps(data[i].dimensions[d]));
+                    sum[d] = _mm256_add_ps(sum[d], _mm256_set1_ps(data[i].dimensions[d]));
                 }
                 count++;
             }
         }
         if (count > 0) {
             for (int d = 0; d < m; d++){
-                __m128 center = _mm_div_ps(sum[d], _mm_set1_ps(static_cast<float>(count)));
-                _mm_storeu_ps(&centers[j].dimensions[d], center);
+                __m256 center = _mm256_div_ps(sum[d], _mm256_set1_ps(static_cast<float>(count)));
+                _mm256_storeu_ps(&centers[j].dimensions[d], center);
             }
         }
-      }
-  }
-
+    }
+}
 
 void MiniBatchKMeans(int k, std::vector<Node>& data, int n, int m, int batchSize) {
     std::vector<Node> centers(k);
@@ -108,7 +112,7 @@ void MiniBatchKMeans(int k, std::vector<Node>& data, int n, int m, int batchSize
             }
 
             // 更新簇中心
-            VectorizedUpdateClusterCenter(data, idx,centers, k, batch_size, m);
+            VectorizedUpdateClusterCenter(data, idx, centers, k, batch_size, m);
         }
     }
 

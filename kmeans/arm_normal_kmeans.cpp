@@ -1,23 +1,24 @@
-#include<iostream>
-#include<vector>
-#include<random>
-#include<ctime>
-#include<cmath>
-#include<algorithm>
+#include <iostream>
+#include <vector>
+#include <random>
+#include <ctime>
+#include <cmath>
+#include <algorithm>
 #include <chrono>
-#include<fstream>
-#include<sstream>
+#include <fstream>
+#include <sstream>
+
 using namespace std;
 
 struct node {
     vector<float> dimen;
 };
 
-void generateStructuredData(vector<node>& data, int n, int m) {
+void generateStructuredData(vector<node>& data, long long n, long long m) {
     data.resize(n);
-    for (int i = 0; i < n; i++) {
+    for (long long i = 0; i < n; i++) {
         data[i].dimen.resize(m);
-        for (int j = 0; j < m; j++) {
+        for (long long j = 0; j < m; j++) {
             data[i].dimen[j] = static_cast<float>(i + 1);
         }
     }
@@ -84,67 +85,59 @@ void Kmeans(long long k, vector<node>& data, long long n, long long m) {
                 }
             }
             if (count_cluster > 0) {
-                for (int i = 0; i < m; ++i) {
+                for (long long i = 0; i < m; ++i) {
                     C[j].dimen[i] = sum_cluster->dimen[i] / count_cluster;
                 }
             }
         }
     }
-    if(cluster_changed ==false){
-    // 输出聚类结果
-    for (long long i = 0; i < k; ++i) {
-        cout << "第 " << i + 1 << " 个簇的中心点：";
-        for (int j = 0; j < m; ++j) {
-            cout << C[i].dimen[j] << " ";
+    if (!cluster_changed) {
+        // 输出聚类结果
+        for (long long i = 0; i < k; ++i) {
+            cout << "第 " << i + 1 << " 个簇的中心点：";
+            for (long long j = 0; j < m; ++j) {
+                cout << C[i].dimen[j] << " ";
+            }
+            cout << endl;
         }
-        cout << endl;
-    }
     }
 }
-#include <stdio.h>
-#include <windows.h>
-#include <sysinfoapi.h>
+
 int main()
 {
-    long long n = 2000000, m = 10, k = 5;
+    long long n = 100000, m = 10, k = 5;
     vector<node> data;
 
     generateStructuredData(data, n, m);
-        // 输出 data 容器中的数据
-    // std::cout << "Generated data:\n";
-    // for (const auto& node : data) {
-    //     std::cout << "Node: ";
-    //     for (float dim : node.dimen) {
-    //         std::cout << dim << " ";
-    //     }
-    //     std::cout << "\n";
-    // }
-    FILETIME start_time, end_time;
-    ULARGE_INTEGER start_time_us, end_time_us;
-    // auto start_time = chrono::high_resolution_clock::now(); // 记录开始时间
-    // for (int i = 1; i <= 100; i++) {
-        // Kmeans(k, data, n, m);
-    // }
-    // auto end_time = chrono::high_resolution_clock::now(); // 记录结束时间
-    // auto elapsed_time = chrono::duration_cast<chrono::milliseconds>(end_time - start_time); // 计算经过的时间
-    // cout << "Kmeans 算法执行时间: " << elapsed_time.count() << " 毫秒" << endl;
-        // 获取开始时间
-    GetSystemTimePreciseAsFileTime(&start_time);
+
+    // 输出 data 容器中的数据
+    std::cout << "Generated data:\n";
+    for (const auto& node : data) {
+        std::cout << "Node: ";
+        for (float dim : node.dimen) {
+            std::cout << dim << " ";
+        }
+        std::cout << "\n";
+    }
+
+    struct timespec start_time, end_time;
+    long long elapsed_time_ns;
+
+    // 获取开始时间
+    clock_gettime(CLOCK_MONOTONIC_RAW, &start_time);
 
     Kmeans(k, data, n, m);
+
     // 获取结束时间
-    GetSystemTimePreciseAsFileTime(&end_time);
+    clock_gettime(CLOCK_MONOTONIC_RAW, &end_time);
 
-    // 计算执行时间
-    start_time_us.LowPart = start_time.dwLowDateTime;
-    start_time_us.HighPart = start_time.dwHighDateTime;
-    end_time_us.LowPart = end_time.dwLowDateTime;
-    end_time_us.HighPart = end_time.dwHighDateTime;
+    // 计算执行时间(纳秒)
+    elapsed_time_ns = (end_time.tv_sec - start_time.tv_sec) * 1000000000 + (end_time.tv_nsec - start_time.tv_nsec);
 
-    ULONGLONG elapsed_time = end_time_us.QuadPart - start_time_us.QuadPart;
-    ULONGLONG elapsed_seconds = elapsed_time / 10000000;
-    ULONGLONG elapsed_nanoseconds = (elapsed_time % 10000000) * 100;
+    // 转换成秒
+    double elapsed_time = static_cast<double>(elapsed_time_ns) / 1000000000.0;
 
-    printf("%llu.%09llu seconds\n", elapsed_seconds, elapsed_nanoseconds);
+    printf("Elapsed time: %.9f seconds\n", elapsed_time);
+
     return 0;
 }

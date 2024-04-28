@@ -5,7 +5,7 @@
 #include <limits>
 #include <algorithm>
 #include <chrono>
-#include <immintrin.h>
+#include <xmmintrin.h>
 #include <fstream>
 #include <sstream>
 
@@ -40,8 +40,8 @@ void VectorizedUpdateClusterCenter(const std::vector<Node>& data, const std::vec
         int count = 0;
         for (int i = 0; i < n - (n % 4); i += 4) {
             __m128 mask = _mm_cmpeq_ps(_mm_load_ps(reinterpret_cast<const float*>(&idx[i])),
-            _mm_set1_ps(static_cast<float>(j)));
-            for (int d = 0; d < m; d++) {//这个函数多个地方可以嵌套simd优化，后面展开讨论
+                                       _mm_set1_ps(static_cast<float>(j)));
+            for (int d = 0; d < m; d++) {
                 __m128 data_vec = _mm_and_ps(_mm_loadu_ps(&data[i].dimensions[d]), mask);
                 sum[d] = _mm_add_ps(sum[d], data_vec);
             }
@@ -62,9 +62,8 @@ void VectorizedUpdateClusterCenter(const std::vector<Node>& data, const std::vec
                 _mm_storeu_ps(&centers[j].dimensions[d], center);
             }
         }
-      }
-  }
-
+    }
+}
 
 void MiniBatchKMeans(int k, std::vector<Node>& data, int n, int m, int batchSize) {
     std::vector<Node> centers(k);
@@ -108,7 +107,7 @@ void MiniBatchKMeans(int k, std::vector<Node>& data, int n, int m, int batchSize
             }
 
             // 更新簇中心
-            VectorizedUpdateClusterCenter(data, idx,centers, k, batch_size, m);
+            VectorizedUpdateClusterCenter(data, idx, centers, k, batch_size, m);
         }
     }
 

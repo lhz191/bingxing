@@ -25,38 +25,46 @@ inline float VectorizedDistance(const Node& x, const Node& z, int n) {
     float result = vget_lane_f32(vsqrt_f32(sum2), 0);
     return result;
 }
-// NEON 版本的更新簇中心函数
 void VectorizedUpdateClusterCenter(const std::vector<Node>& data, const std::vector<int>& idx, 
                                    std::vector<Node>& centers, int k, int n, int m) {
     for (int j = 0; j < k; j++) {
-        float32x4_t sum[m];
-        for (int dim = 0; dim < m; dim++) {
-            sum[dim] = vdupq_n_f32(0.0f);
-        }
+        float32x4_t sum[4] = {vdupq_n_f32(0.0f), vdupq_n_f32(0.0f), vdupq_n_f32(0.0f), vdupq_n_f32(0.0f)};
         int count = 0;
         for (int i = 0; i < n - (n % 4); i += 4) {
             uint32x4_t mask = vceqq_f32(vld1q_f32(reinterpret_cast<const float*>(&idx[i])), 
                                         vdupq_n_f32(static_cast<float>(j)));
-            for (int dim = 0; dim < m; dim++) {
-                float32x4_t data_vec = vbslq_f32(mask, vld1q_f32(&data[i].dimensions[dim]), vdupq_n_f32(0.0f));
-                sum[dim] = vaddq_f32(sum[dim], data_vec);
+
+            for (int dim = 0; dim < m; dim += 4) {
+                float32x4_t data_vec0 = vbslq_f32(mask, vld1q_f32(&data[i].dimensions[dim + 0]), vdupq_n_f32(0.0f));
+                float32x4_t data_vec1 = vbslq_f32(mask, vld1q_f32(&data[i].dimensions[dim + 1]), vdupq_n_f32(0.0f));
+                float32x4_t data_vec2 = vbslq_f32(mask, vld1q_f32(&data[i].dimensions[dim + 2]), vdupq_n_f32(0.0f));
+                float32x4_t data_vec3 = vbslq_f32(mask, vld1q_f32(&data[i].dimensions[dim + 3]), vdupq_n_f32(0.0f));
+
+                sum[0] = vaddq_f32(sum[0], data_vec0);
+                sum[1] = vaddq_f32(sum[1], data_vec1);
+                sum[2] = vaddq_f32(sum[2], data_vec2);
+                sum[3] = vaddq_f32(sum[3], data_vec3);
             }
+
             count += vaddvq_u32(mask);
         }
+
         // 处理最后几个不足 4 个的数据
         for (int i = n - (n % 4); i < n; i++) {
             if (idx[i] == j) {
                 for (int dim = 0; dim < m; dim++) {
-                    sum[dim] = vaddq_f32(sum[dim], vdupq_n_f32(data[i].dimensions[dim]));
+                    sum[dim % 4] = vaddq_f32(sum[dim % 4], vdupq_n_f32(data[i].dimensions[dim]));
                 }
                 count++;
             }
         }
-        if (count > 0) 
+
+        if (count > 0) {
             for (int dim = 0; dim < m; dim++) {
-                float32x4_t center = vdivq_f32(sum[dim], vdupq_n_f32(static_cast<float>(count)));
+                float32x4_t center = vdivq_f32(sum[dim % 4], vdupq_n_f32(static_cast<float>(count)));
                 vst1q_f32(&centers[j].dimensions[dim], center);
             }
+        }
     }
 }
 void KMeans(int k, std::vector<Node>& data, int n, int m) {
@@ -131,54 +139,39 @@ void generateStructuredData(std::vector<Node>& data, int n, int m) {
 #include <stdio.h>
 #include <time.h>
 int main() {
-    int n = 100, m = 10, k = 5;
+    int n = 100000, m = 10, k = 5;
     std::vector<Node> data;
 
-    // 生成随机数据点
-    // std::random_device rd;
-    // std::mt19937 gen(rd());
-    // std::normal_distribution<float> distribution(0.0f, 1.0f);
-    // for (Node& node : data) {
-    //     node.dimensions.resize(m);
-    //     for (float& dim : node.dimensions) {
-    //         dim = distribution(gen);
-    //     }
-    // }
-
     generateStructuredData(data, n, m);
-    // 输出 data 容器中的数据
+
+    //输出 data 容器中的数据
     std::cout << "Generated data:\n";
     for (const auto& node : data) {
-        std::cout << "Node: ";
+       std::cout << "Node: ";
         for (float dim : node.dimensions) {
-            std::cout << dim << " ";
+           std::cout << dim << " ";
         }
         std::cout << "\n";
     }
 
-    // auto start_time = std::chrono::high_resolution_clock::now();
-    // for(int p=1;p<=100;p++){
-    // KMeans(k, data, n, m);
-    // }
-    // auto end_time = std::chrono::high_resolution_clock::now();
-    // auto elapsed_time = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count();
-
-    // std::cout << "K-Means algorithm execution time: " << elapsed_time << " ms" << std::endl;
-
-    // return 0;
     struct timespec start_time, end_time;
-    long long elapsed_time;
+    long long elapsed_time_ns;
 
     // 获取开始时间
     clock_gettime(CLOCK_MONOTONIC, &start_time);
 
     KMeans(k, data, n, m);
+
     // 获取结束时间
     clock_gettime(CLOCK_MONOTONIC, &end_time);
-    // 计算执行时间
-    elapsed_time = (end_time.tv_sec - start_time.tv_sec) + (end_time.tv_nsec - start_time.tv_nsec) / 1000000000.0;
+
+    // 计算执行时间(纳秒)
+    elapsed_time_ns = (end_time.tv_sec - start_time.tv_sec) * 1000000000 + (end_time.tv_nsec - start_time.tv_nsec);
+
+    // 转换成秒
+    double elapsed_time = static_cast<double>(elapsed_time_ns) / 1000000000.0;
 
     printf("Elapsed time: %.9f seconds\n", elapsed_time);
 
-
+    return 0;
 }
