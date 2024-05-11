@@ -1,3 +1,4 @@
+实验二：
 实验测得的数据都在对应project的工作簿里，unroll展开和多流水线超标量等优化的代码是直接从原代码上直接改的，没有单独成一个文件。
 linux系统上跑的代码跟kunpeng的代码类似，都是用的通用的时钟进行计数。
 python文件是用来生成矩阵or数组元素的文件，用来测量文件大小，以此根据缓存来决定测试规模N。
@@ -11,3 +12,4 @@ linux:在实验室的电脑上用vscode的远程服务器连接跑的代码，�
 
 ![image](https://github.com/lhz191/bingxing/assets/142021438/5e38a567-54ff-4f1c-b477-1d93df60cb8f)
 
+利用SIMD编程实现K-means算法优化。
