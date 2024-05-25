@@ -1,12 +1,13 @@
-#include<iostream>
-#include<vector>
-#include<random>
-#include<ctime>
-#include<cmath>
-#include<algorithm>
+#include <iostream>
+#include <vector>
+#include <random>
+#include <ctime>
+#include <cmath>
+#include <algorithm>
 #include <chrono>
-#include<fstream>
-#include<sstream>
+#include <fstream>
+#include <sstream>
+
 using namespace std;
 
 struct node {
@@ -37,7 +38,7 @@ void Add(node& result, const node& X, long long n) {
     }
 }
 
-void Kmeans(long long k, vector<node>& data, long long n, long long m) {
+void Mini_Batch_Kmeans(long long k, vector<node>& data, long long n, long long m, long long batch_size) {
     vector<node> C(k); // 存储簇中心
     vector<long int> idx(n);
     vector<vector<float>> D(n, vector<float>(k)); // 存储样本点到簇中心的距离
@@ -53,33 +54,43 @@ void Kmeans(long long k, vector<node>& data, long long n, long long m) {
 
     // 2. 迭代聚类过程，直到簇中心不再变化
     bool cluster_changed = true;
+       int iteration = 1; // 迭代次数
     while (cluster_changed) {
         cluster_changed = false;
-        // 2.1 计算每个样本点到簇中心的距离，并重新分配簇
-        for (long long i = 0; i < n; ++i) {
+cout << "Iteration " << iteration << ":" << endl;
+iteration++;
+        // 2.1 随机选择一个小批量的数据进行处理
+        vector<long long> batch_idx(batch_size);
+        for (long long i = 0; i < batch_size; ++i) {
+            batch_idx[i] = dis(gen);
+        }
+
+        // 2.2 计算小批量数据点到簇中心的距离,并重新分配簇
+        for (long long i = 0; i < batch_size; ++i) {
             float min_distance = numeric_limits<float>::max();
             long long min_index = -1;
             for (long long j = 0; j < k; ++j) {
-                float distance = Distance(data[i], C[j], m);
-                D[i][j] = distance;
+                float distance = Distance(data[batch_idx[i]], C[j], m);
+                D[batch_idx[i]][j] = distance;
                 if (distance < min_distance) {
                     min_distance = distance;
                     min_index = j;
                 }
             }
-            if (idx[i] != min_index) {
-                idx[i] = min_index;
+            if (idx[batch_idx[i]] != min_index) {
+                idx[batch_idx[i]] = min_index;
                 cluster_changed = true;
             }
         }
-        // 2.2 更新簇中心
+
+        // 2.3 更新簇中心
         for (long long j = 0; j < k; ++j) {
             node* sum_cluster = new node;
             sum_cluster->dimen.resize(m); // 设置 dimen 向量的大小为 m
             long long count_cluster = 0;
-            for (long long i = 0; i < n; ++i) {
-                if (idx[i] == j) {
-                    Add(*sum_cluster, data[i], m);
+            for (long long i = 0; i < batch_size; ++i) {
+                if (idx[batch_idx[i]] == j) {
+                    Add(*sum_cluster, data[batch_idx[i]], m);
                     ++count_cluster;
                 }
             }
@@ -88,9 +99,10 @@ void Kmeans(long long k, vector<node>& data, long long n, long long m) {
                     C[j].dimen[i] = sum_cluster->dimen[i] / count_cluster;
                 }
             }
+            delete sum_cluster;
         }
     }
-    if(cluster_changed ==false){
+
     // 输出聚类结果
     for (long long i = 0; i < k; ++i) {
         cout << "第 " << i + 1 << " 个簇的中心点：";
@@ -99,43 +111,25 @@ void Kmeans(long long k, vector<node>& data, long long n, long long m) {
         }
         cout << endl;
     }
-    }
 }
 #include <stdio.h>
 #include <windows.h>
 #include <sysinfoapi.h>
-int main()
-{
-    long long n = 2000000, m = 10, k = 5;
+int main() {
+    long long n = 1000, m = 10, k = 5, batch_size = 100;
     vector<node> data;
 
     generateStructuredData(data, n, m);
-        // 输出 data 容器中的数据
-    // std::cout << "Generated data:\n";
-    // for (const auto& node : data) {
-    //     std::cout << "Node: ";
-    //     for (float dim : node.dimen) {
-    //         std::cout << dim << " ";
-    //     }
-    //     std::cout << "\n";
-    // }
+
     FILETIME start_time, end_time;
     ULARGE_INTEGER start_time_us, end_time_us;
-    // auto start_time = chrono::high_resolution_clock::now(); // 记录开始时间
-    // for (int i = 1; i <= 100; i++) {
-        // Kmeans(k, data, n, m);
-    // }
-    // auto end_time = chrono::high_resolution_clock::now(); // 记录结束时间
-    // auto elapsed_time = chrono::duration_cast<chrono::milliseconds>(end_time - start_time); // 计算经过的时间
-    // cout << "Kmeans 算法执行时间: " << elapsed_time.count() << " 毫秒" << endl;
-        // 获取开始时间
+
     GetSystemTimePreciseAsFileTime(&start_time);
 
-    Kmeans(k, data, n, m);
-    // 获取结束时间
+    Mini_Batch_Kmeans(k, data, n, m, batch_size);
+
     GetSystemTimePreciseAsFileTime(&end_time);
 
-    // 计算执行时间
     start_time_us.LowPart = start_time.dwLowDateTime;
     start_time_us.HighPart = start_time.dwHighDateTime;
     end_time_us.LowPart = end_time.dwLowDateTime;
@@ -146,5 +140,6 @@ int main()
     ULONGLONG elapsed_nanoseconds = (elapsed_time % 10000000) * 100;
 
     printf("%llu.%09llu seconds\n", elapsed_seconds, elapsed_nanoseconds);
+
     return 0;
 }
