@@ -13,3 +13,10 @@ linux:在实验室的电脑上用vscode的远程服务器连接跑的代码，�
 ![image](https://github.com/lhz191/bingxing/assets/142021438/5e38a567-54ff-4f1c-b477-1d93df60cb8f)
 
 利用SIMD编程实现K-means算法优化。
+
+
+openmp：利用Intel Developer Cloud平台将OpenMP卸载到加速设备和进行oneapi实验
+![ebce4226a32823ddcfeb0beea0f1053](https://github.com/lhz191/bingxing/assets/142021438/57939493-fecd-4d43-954f-c83f356cc458)
+
+arm平台上进行实验的文件，openmp的文件夹里也有：
+![image](https://github.com/lhz191/bingxing/assets/142021438/49c29ef8-d856-4aeb-8793-664fb2b5c9aa)
