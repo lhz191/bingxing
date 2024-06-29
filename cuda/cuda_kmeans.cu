@@ -160,7 +160,7 @@ void Kmeans(long long k, vector<node>& data, long long n, long long m) {
     cudaFree(d_distances);
     cudaFree(d_labels);
     cudaFree(d_clusterSizes);
-
+}
 int main()
 {
     long long n = 500000, m = 10, k = 5;
