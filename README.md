@@ -20,3 +20,6 @@ openmp：利用Intel Developer Cloud平台将OpenMP卸载到加速设备和进�
 
 arm平台上进行实验的文件，openmp的文件夹里也有：
 ![image](https://github.com/lhz191/bingxing/assets/142021438/49c29ef8-d856-4aeb-8793-664fb2b5c9aa)
+
+![image](https://github.com/lhz191/bingxing/assets/142021438/20e33fba-4024-469b-a7de-358642d465c8)
+
