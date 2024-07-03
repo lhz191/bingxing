@@ -1,0 +1,306 @@
+#include <iostream>
+#include <vector>
+#include <random>
+#include <cmath>
+#include <algorithm>
+#include <chrono>
+#include <mpi.h>
+#include <omp.h>
+#include <immintrin.h>
+#include <cuda_runtime.h>
+#include <device_launch_parameters.h>
+
+using namespace std;
+
+struct node {
+    float* dimen;
+};
+
+void generateStructuredData(vector<node>& data, int n, int m) {
+    data.resize(n);
+    for (int i = 0; i < n; i++) {
+        data[i].dimen = new float[m];
+        for (int j = 0; j < m; j++) {
+            data[i].dimen[j] = static_cast<float>(i + 1);
+        }
+    }
+}
+
+__global__ void calculateDistancesCUDA(float* data, float* centroids, float* distances, int n, int m, int k) {
+    int idx = blockIdx.x * blockDim.x + threadIdx.x;
+    if (idx < n) {
+        for (int j = 0; j < k; j++) {
+            float distance = 0;
+            for (int d = 0; d < m; d++) {
+                float diff = data[idx * m + d] - centroids[j * m + d];
+                distance += diff * diff;
+            }
+            distances[idx * k + j] = sqrt(distance);
+        }
+    }
+}
+
+void calculateDistancesAVX(float* data, float* centroids, float* distances, int n, int m, int k) {
+#pragma omp parallel for schedule(guided) num_threads(16)
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < k; j++) {
+            __m256 distance = _mm256_setzero_ps();
+            for (int d = 0; d < m; d += 8) {
+                __m256 data_vec = _mm256_loadu_ps(&data[i * m + d]);
+                __m256 cent_vec = _mm256_loadu_ps(&centroids[j * m + d]);
+                __m256 diff = _mm256_sub_ps(data_vec, cent_vec);
+                __m256 diff_sq = _mm256_mul_ps(diff, diff);
+                distance = _mm256_add_ps(distance, diff_sq);
+            }
+            float dist_array[8];
+            _mm256_storeu_ps(dist_array, distance);
+            distances[i * k + j] = sqrt(dist_array[0] + dist_array[1] + dist_array[2] + dist_array[3] + dist_array[4] + dist_array[5] + dist_array[6] + dist_array[7]);
+        }
+    }
+}
+
+__global__ void assignClustersCUDA(float* distances, int* labels, int n, int k) {
+    int idx = blockIdx.x * blockDim.x + threadIdx.x;
+    if (idx < n) {
+        float minDistance = distances[idx * k];
+        int minIndex = 0;
+        for (int j = 1; j < k; j++) {
+            if (distances[idx * k + j] < minDistance) {
+                minDistance = distances[idx * k + j];
+                minIndex = j;
+            }
+        }
+        labels[idx] = minIndex;
+    }
+}
+
+void assignClustersOMP(float* distances, int* labels, int n, int k) {
+#pragma omp parallel for schedule(guided) num_threads(16)
+    for (int i = 0; i < n; i++) {
+        float minDistance = distances[i * k];
+        int minIndex = 0;
+        for (int j = 1; j < k; j++) {
+            if (distances[i * k + j] < minDistance) {
+                minDistance = distances[i * k + j];
+                minIndex = j;
+            }
+        }
+        labels[i] = minIndex;
+    }
+}
+
+void updateCentroidsOMP(float* data, float* centroids, int* labels, int* clusterSizes, int n, int m, int k) {
+#pragma omp parallel for schedule(guided) num_threads(16)
+    for (int i = 0; i < k * m; ++i) {
+        centroids[i] = 0;
+    }
+
+#pragma omp parallel num_threads(16)
+    {
+        vector<float> local_centroids(k * m, 0);
+        vector<int> local_clusterSizes(k, 0);
+
+#pragma omp for nowait
+        for (int i = 0; i < n; i++) {
+            int cluster = labels[i];
+            for (int d = 0; d < m; d++) {
+                local_centroids[cluster * m + d] += data[i * m + d];
+            }
+            local_clusterSizes[cluster]++;
+        }
+
+#pragma omp critical
+        {
+            for (int i = 0; i < k * m; i++) {
+                centroids[i] += local_centroids[i];
+            }
+            for (int i = 0; i < k; i++) {
+                clusterSizes[i] += local_clusterSizes[i];
+            }
+        }
+    }
+}
+
+__global__ void normalizeCentroidsCUDA(float* centroids, int* clusterSizes, int m, int k) {
+    int idx = blockIdx.x * blockDim.x + threadIdx.x;
+    if (idx < k) {
+        for (int d = 0; d < m; d++) {
+            centroids[idx * m + d] /= clusterSizes[idx];
+        }
+    }
+}
+
+void Mini_Batch_Kmeans(long long k, vector<node>& data, long long n, long long m, long long batch_size, int max_iterations) {
+    int size, rank;
+    MPI_Comm_size(MPI_COMM_WORLD, &size);
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
+    long long local_n = n / size;
+    long long start_idx = rank * local_n;
+    long long end_idx = (rank == size - 1) ? n : start_idx + local_n;
+    local_n = end_idx - start_idx;
+
+    float* d_data;
+    float* d_centroids;
+    float* d_distances;
+    int* d_labels;
+    int* d_clusterSizes;
+
+    cudaMalloc(&d_data, local_n * m * sizeof(float));
+    cudaMalloc(&d_centroids, k * m * sizeof(float));
+    cudaMalloc(&d_distances, batch_size * k * sizeof(float));
+    cudaMalloc(&d_labels, batch_size * sizeof(int));
+    cudaMalloc(&d_clusterSizes, k * sizeof(int));
+
+    vector<float> h_data(local_n * m);
+    for (int i = start_idx; i < end_idx; ++i) {
+        for (int j = 0; j < m; ++j) {
+            h_data[(i - start_idx) * m + j] = data[i].dimen[j];
+        }
+    }
+
+    cudaMemcpy(d_data, h_data.data(), local_n * m * sizeof(float), cudaMemcpyHostToDevice);
+
+    vector<float> h_centroids(k * m);
+    if (rank == 0) {
+        random_device rd;
+        mt19937 gen(rd());
+        uniform_int_distribution<> dis(0, n - 1);
+        for (int i = 0; i < k; ++i) {
+            int idx_init = dis(gen);
+            for (int j = 0; j < m; ++j) {
+                h_centroids[i * m + j] = data[idx_init].dimen[j];
+            }
+        }
+    }
+
+    MPI_Bcast(h_centroids.data(), k* m, MPI_FLOAT, 0, MPI_COMM_WORLD);
+    cudaMemcpy(d_centroids, h_centroids.data(), k* m * sizeof(float), cudaMemcpyHostToDevice);
+
+    vector<int> idx(batch_size, -1);
+    bool cluster_changed = true;
+    int iteration = 0;
+
+    while (cluster_changed && iteration < max_iterations) {
+        cluster_changed = false;
+        int blockSize = 256;
+        int numBlocks = (batch_size + blockSize - 1) / blockSize;
+
+        // Generate a random batch of data points
+        vector<float> h_batch(batch_size * m);
+        vector<int> batch_indices(batch_size);
+        if (rank == 0) {
+            random_device rd;
+            mt19937 gen(rd());
+            uniform_int_distribution<> dis(0, n - 1);
+            for (int i = 0; i < batch_size; ++i) {
+                batch_indices[i] = dis(gen);
+            }
+        }
+
+        MPI_Bcast(batch_indices.data(), batch_size, MPI_INT, 0, MPI_COMM_WORLD);
+        for (int i = 0; i < batch_size; ++i) {
+            for (int j = 0; j < m; ++j) {
+                h_batch[i * m + j] = data[batch_indices[i]].dimen[j];
+            }
+        }
+
+        // Copy batch data to device
+        float* d_batch;
+        cudaMalloc(&d_batch, batch_size * m * sizeof(float));
+        cudaMemcpy(d_batch, h_batch.data(), batch_size * m * sizeof(float), cudaMemcpyHostToDevice);
+
+        calculateDistancesCUDA << <numBlocks, blockSize >> > (d_batch, d_centroids, d_distances, batch_size, m, k);
+        cudaDeviceSynchronize();
+
+        assignClustersCUDA << <numBlocks, blockSize >> > (d_distances, d_labels, batch_size, k);
+        cudaDeviceSynchronize();
+
+        vector<int> h_labels(batch_size);
+        cudaMemcpy(h_labels.data(), d_labels, batch_size * sizeof(int), cudaMemcpyDeviceToHost);
+
+        vector<int> h_clusterSizes(k, 0);
+        updateCentroidsOMP(h_batch.data(), h_centroids.data(), h_labels.data(), h_clusterSizes.data(), batch_size, m, k);
+
+        vector<float> global_centroids(k * m, 0);
+        vector<int> global_clusterSizes(k, 0);
+        MPI_Request request_centroids, request_sizes;
+        MPI_Iallreduce(h_centroids.data(), global_centroids.data(), k * m, MPI_FLOAT, MPI_SUM, MPI_COMM_WORLD, &request_centroids);
+        MPI_Iallreduce(h_clusterSizes.data(), global_clusterSizes.data(), k, MPI_INT, MPI_SUM, MPI_COMM_WORLD, &request_sizes);
+
+        int local_cluster_changed = 0;
+        for (int i = 0; i < batch_size; ++i) {
+            if (idx[i] != h_labels[i]) {
+                local_cluster_changed = 1;
+                idx[i] = h_labels[i];
+            }
+        }
+        int global_cluster_changed = 0;
+        MPI_Allreduce(&local_cluster_changed, &global_cluster_changed, 1, MPI_INT, MPI_LOR, MPI_COMM_WORLD);
+        cluster_changed = global_cluster_changed;
+
+        MPI_Wait(&request_centroids, MPI_STATUS_IGNORE);
+        MPI_Wait(&request_sizes, MPI_STATUS_IGNORE);
+
+        for (int i = 0; i < k; ++i) {
+            for (int j = 0; j < m; ++j) {
+                if (global_clusterSizes[i] > 0) {
+                    global_centroids[i * m + j] /= global_clusterSizes[i];
+                }
+            }
+        }
+
+        cudaMemcpy(d_centroids, global_centroids.data(), k * m * sizeof(float), cudaMemcpyHostToDevice);
+        cudaMemcpy(h_centroids.data(), d_centroids, k * m * sizeof(float), cudaMemcpyHostToHost);
+
+        if (rank == 0) {
+            cout << "Iteration " << iteration + 1 << " completed." << endl;
+        }
+
+        cudaFree(d_batch);
+        iteration++;
+    }
+
+    if (rank == 0) {
+        for (long long i = 0; i < k; ++i) {
+            cout << "Cluster " << i + 1 << " centroid: ";
+            for (int j = 0; j < m; ++j) {
+                cout << h_centroids[i * m + j] << " ";
+            }
+            cout << endl;
+        }
+    }
+
+    cudaFree(d_data);
+    cudaFree(d_centroids);
+    cudaFree(d_distances);
+    cudaFree(d_labels);
+    cudaFree(d_clusterSizes);
+}
+
+int main(int argc, char** argv) {
+    MPI_Init(&argc, &argv);
+
+    omp_set_num_threads(16);
+
+    long long n = 5000000, m = 10, k = 5, batch_size = 100;
+    vector<node> data;
+    int max_it = 5000;
+    generateStructuredData(data, n, m);
+
+    auto start_time = chrono::high_resolution_clock::now();
+
+    Mini_Batch_Kmeans(k, data, n, m, batch_size,max_it);
+
+    auto end_time = chrono::high_resolution_clock::now();
+    chrono::duration<double> duration = end_time - start_time;
+
+    int rank;
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    if (rank == 0) {
+        cout << "Mini Batch K-means completed in " << duration.count() << " seconds." << endl;
+    }
+
+    MPI_Finalize();
+    return 0;
+}

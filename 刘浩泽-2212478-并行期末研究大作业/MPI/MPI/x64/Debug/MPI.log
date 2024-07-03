@@ -1,0 +1,32 @@
+﻿  Compiling CUDA source file File.cu...
+  
+  D:\vs2022\MPI\MPI>"D:\NVIDIA GPU Computing Toolkit\CUDA\v12.1\bin\nvcc.exe" -gencode=arch=compute_52,code=\"sm_52,compute_52\" --use-local-env -ccbin "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.35.32215\bin\HostX64\x64" -x cu   -ID:\CS_work\Include\ -ID:\CS_work\Lib\Include -ID:\CS_work\Include\\x64 -I"D:\NVIDIA GPU Computing Toolkit\CUDA\v12.1" -I"D:\NVIDIA GPU Computing Toolkit\CUDA\v12.1\include" -I"D:\NVIDIA GPU Computing Toolkit\CUDA\v12.1\include"  -G   --keep-dir x64\Debug  -maxrregcount=0   --machine 64 --compile -cudart static  -g  -D_DEBUG -D_CONSOLE -D_UNICODE -DUNICODE -Xcompiler "/EHsc /W3 /nologo /Od /FS /Zi /RTC1 /MDd " -Xcompiler "/Fdx64\Debug\vc143.pdb" -o D:\vs2022\MPI\MPI\x64\Debug\File.cu.obj "D:\vs2022\MPI\MPI\File.cu" 
+  File.cu
+  tmpxft_0001ebc8_00000000-7_File.cudafe1.cpp
+D:\vs2022\MPI\MPI\File.cu(156): warning C4244: “初始化”: 从“__int64”转换到“int”，可能丢失数据
+D:\vs2022\MPI\MPI\File.cu(168): warning C4244: “参数”: 从“__int64”转换到“_Ty”，可能丢失数据
+          with
+          [
+              _Ty=int
+          ]
+D:\vs2022\MPI\MPI\File.cu(177): warning C4244: “参数”: 从“__int64”转换到“int”，可能丢失数据
+D:\vs2022\MPI\MPI\File.cu(187): warning C4244: “初始化”: 从“__int64”转换到“int”，可能丢失数据
+D:\vs2022\MPI\MPI\File.cu(195): warning C4244: “参数”: 从“__int64”转换到“_Ty”，可能丢失数据
+          with
+          [
+              _Ty=int
+          ]
+D:\vs2022\MPI\MPI\File.cu(201): warning C4244: “参数”: 从“__int64”转换到“int”，可能丢失数据
+D:\vs2022\MPI\MPI\File.cu(213): warning C4244: “参数”: 从“__int64”转换到“int”，可能丢失数据
+D:\vs2022\MPI\MPI\File.cu(213): warning C4244: “参数”: 从“__int64”转换到“int”，可能丢失数据
+D:\vs2022\MPI\MPI\File.cu(213): warning C4244: “参数”: 从“__int64”转换到“int”，可能丢失数据
+D:\vs2022\MPI\MPI\File.cu(216): warning C4244: “参数”: 从“__int64”转换到“int”，可能丢失数据
+D:\vs2022\MPI\MPI\File.cu(216): warning C4244: “参数”: 从“__int64”转换到“int”，可能丢失数据
+D:\vs2022\MPI\MPI\File.cu(223): warning C4244: “参数”: 从“__int64”转换到“int”，可能丢失数据
+D:\vs2022\MPI\MPI\File.cu(223): warning C4244: “参数”: 从“__int64”转换到“int”，可能丢失数据
+D:\vs2022\MPI\MPI\File.cu(223): warning C4244: “参数”: 从“__int64”转换到“int”，可能丢失数据
+D:\vs2022\MPI\MPI\File.cu(228): warning C4244: “参数”: 从“__int64”转换到“int”，可能丢失数据
+D:\vs2022\MPI\MPI\File.cu(229): warning C4244: “参数”: 从“__int64”转换到“int”，可能丢失数据
+D:\vs2022\MPI\MPI\File.cu(289): warning C4244: “参数”: 从“__int64”转换到“int”，可能丢失数据
+D:\vs2022\MPI\MPI\File.cu(289): warning C4244: “参数”: 从“__int64”转换到“int”，可能丢失数据
+  MPI.vcxproj -> D:\vs2022\MPI\x64\Debug\MPI.exe
