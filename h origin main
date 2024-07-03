@@ -1,0 +1,218 @@
+[33mcommit f6038ec8bf4c73151e7c72e209e76b1d81fc08e9[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m
+Author: lhz191 <221248@mail.nankai.edu.cn>
+Date:   Thu Jul 4 00:37:16 2024 +0800
+
+    期末大作业
+
+[33mcommit 55231275f59a0455d81ac89d37ee978c31d8883b[m
+Author: lhz191 <221248@mail.nankai.edu.cn>
+Date:   Thu Jul 4 00:35:17 2024 +0800
+
+    期末大作业
+
+[33mcommit 9a9a49dce7c6f5a34e9f1805837dd6ce767cadf0[m
+Merge: b42b4c5 b68df0f
+Author: lhz191 <221248@mail.nankai.edu.cn>
+Date:   Thu Jul 4 00:33:31 2024 +0800
+
+    Merge branch 'main' of https://github.com/lhz191/bingxing
+
+[33mcommit b42b4c541b1f3be7776e21b4057ea0942aef8aa5[m
+Author: lhz191 <221248@mail.nankai.edu.cn>
+Date:   Thu Jul 4 00:26:57 2024 +0800
+
+    Initial commit
+
+[33mcommit b68df0fb5f6611a4ec68480fb311e69d9142f202[m[33m ([m[1;31morigin/main[m[33m)[m
+Author: lhz191 <142021438+lhz191@users.noreply.github.com>
+Date:   Sun Jun 30 12:35:59 2024 +0800
+
+    Add files via upload
+
+[33mcommit 9bb0c5a6042b2d49d36d136b5c426c0aa492f333[m
+Author: lhz191 <142021438+lhz191@users.noreply.github.com>
+Date:   Sat Jun 29 21:33:18 2024 +0800
+
+    Update README.md
+
+[33mcommit 89e58d13861f37362c91b7b68aaa10404ea7305c[m
+Author: lhz191 <142021438+lhz191@users.noreply.github.com>
+Date:   Sat Jun 29 20:53:52 2024 +0800
+
+    Update cuda_kmeans.cu
+
+[33mcommit cd339c252e56a9fdddfd189ebba482c3a6377449[m
+Author: lhz191 <2212478@mail.nankai.edu.cn>
+Date:   Sun Jun 16 19:35:20 2024 +0800
+
+    a
+
+[33mcommit 16bd55aa299e4a1efb047ba4f5459fa8489e1508[m
+Merge: 972878d 19b246a
+Author: lhz191 <2212478@mail.nankai.edu.cn>
+Date:   Sun Jun 16 19:34:59 2024 +0800
+
+    Merge branch 'main' of https://github.com/lhz191/bingxing
+
+[33mcommit 972878d8bb22193d5de4fb1cd0b65fa4cf9050f3[m
+Author: lhz191 <2212478@mail.nankai.edu.cn>
+Date:   Mon Jun 10 00:02:19 2024 +0800
+
+    mpi
+
+[33mcommit 19b246ac661a48be8b76c0a3e303a7ff2d5df415[m
+Author: lhz191 <142021438+lhz191@users.noreply.github.com>
+Date:   Sun May 26 19:27:48 2024 +0800
+
+    Update README.md
+
+[33mcommit 3a180ef1554447f17405fff4e6c32e89feb1c2a3[m
+Author: lhz191 <142021438+lhz191@users.noreply.github.com>
+Date:   Sun May 26 19:25:39 2024 +0800
+
+    Update README.md
+
+[33mcommit 392f922d8d69c69e9fc961e79c49e3c0fae1996f[m
+Author: lhz191 <142021438+lhz191@users.noreply.github.com>
+Date:   Sun May 26 19:25:17 2024 +0800
+
+    Update README.md
+
+[33mcommit 4f43145a0482306d5eb6cd114fadf95413acfa5d[m
+Author: lhz191 <142021438+lhz191@users.noreply.github.com>
+Date:   Sun May 26 19:24:34 2024 +0800
+
+    Update README.md
+
+[33mcommit 1ea714650e7f153e99e0d2cba44b67214d100ecf[m
+Author: lhz191 <2212478@mail.nankai.edu.cn>
+Date:   Sun May 26 19:18:32 2024 +0800
+
+    openmp
+
+[33mcommit 3df3eac82c285f31fda904f5384228d017dd8c2e[m
+Author: lhz191 <2212478@mail.nankai.edu.cn>
+Date:   Sat May 25 13:52:42 2024 +0800
+
+    pthread
+
+[33mcommit a0f7ec78fd1b2aeb888c6bea27cde80dbcf6735b[m
+Merge: 97809b2 054a539
+Author: lhz191 <2212478@mail.nankai.edu.cn>
+Date:   Sat May 25 13:32:14 2024 +0800
+
+    Merge branch 'main' of https://github.com/lhz191/bingxing
+
+[33mcommit 97809b2e1fef0adb8c1502e3722bdacb05a6631d[m
+Author: lhz191 <2212478@mail.nankai.edu.cn>
+Date:   Sat May 25 13:32:10 2024 +0800
+
+    openmp pthread
+
+[33mcommit 054a539e74018af498cd8418f591884fc6b2d3d3[m
+Author: lhz191 <142021438+lhz191@users.noreply.github.com>
+Date:   Sat May 11 15:54:05 2024 +0800
+
+    Update README.md
+
+[33mcommit c4ec95146bc6d44f2d2091439bad7607d13b2b6b[m
+Author: lhz191 <2212478@mail.nankai.edu.cn>
+Date:   Sun Apr 28 17:11:46 2024 +0800
+
+    a
+
+[33mcommit 6921686b0d78965724c4b09f52c4ed4089fb14b2[m
+Author: lhz191 <2212478@mail.nankai.edu.cn>
+Date:   Tue Apr 23 20:54:47 2024 +0800
+
+    a
+
+[33mcommit c34b8741a404f95019e99969452dfab5e513f697[m
+Author: lhz191 <2212478@mail.nankai.edu.cn>
+Date:   Tue Apr 23 20:50:05 2024 +0800
+
+    a
+
+[33mcommit 8be617f5c6434a9ac7923e4e31821dde4c7782a3[m
+Author: lhz191 <2212478@mail.nankai.edu.cn>
+Date:   Tue Apr 23 17:03:36 2024 +0800
+
+    a
+
+[33mcommit 5ebb79d88165c3ee6b5af0539062ffe894921c5a[m
+Author: lhz191 <2212478@mail.nankai.edu.cn>
+Date:   Tue Apr 23 17:00:33 2024 +0800
+
+    a
+
+[33mcommit d42712980e6332baa08675b8aa2e0c1438a85552[m
+Author: lhz191 <2212478@mail.nankai.edu.cn>
+Date:   Thu Apr 4 16:49:39 2024 +0800
+
+    a
+
+[33mcommit afbed8f56ad5ec254cef7b637a38203247da2f97[m
+Author: lhz191 <142021438+lhz191@users.noreply.github.com>
+Date:   Thu Apr 4 16:27:24 2024 +0800
+
+    Add files via upload
+
+[33mcommit fb70a36e6a683d44f19f812b2f19e08d85380b48[m
+Author: lhz191 <142021438+lhz191@users.noreply.github.com>
+Date:   Thu Apr 4 16:16:20 2024 +0800
+
+    Add files via upload
+
+[33mcommit c75d25a6bc57319b374b606341e742b5f5af6efb[m
+Author: lhz191 <142021438+lhz191@users.noreply.github.com>
+Date:   Sun Mar 24 19:26:26 2024 +0800
+
+    Update README.md
+
+[33mcommit b414564a3076fa797cfa61a3b6a0930049f8da91[m
+Author: lhz191 <142021438+lhz191@users.noreply.github.com>
+Date:   Sun Mar 24 19:19:46 2024 +0800
+
+    Update README.md
+
+[33mcommit 52328749e278f94106e141a0322c09be54207b0d[m
+Author: lhz191 <142021438+lhz191@users.noreply.github.com>
+Date:   Sun Mar 24 19:18:12 2024 +0800
+
+    Update README.md
+
+[33mcommit f316c3c15a20047daf738a5ebf9b24e92323f989[m
+Author: lhz191 <142021438+lhz191@users.noreply.github.com>
+Date:   Sun Mar 24 19:14:47 2024 +0800
+
+    Update README.md
+
+[33mcommit 1b9f3e327b4b1ebc1c7094917612572c2022874e[m
+Author: lhz191 <142021438+lhz191@users.noreply.github.com>
+Date:   Sun Mar 24 19:14:00 2024 +0800
+
+    Update README.md
+
+[33mcommit 5a47d16dccc34d07dd17ade3f5b04e5b348fe22a[m
+Author: lhz191 <142021438+lhz191@users.noreply.github.com>
+Date:   Sun Mar 24 19:13:35 2024 +0800
+
+    Create README.md
+
+[33mcommit 78a3901f9b659fbd3db5dba9bedd86f838074852[m
+Author: lhz191 <2212478@mail.nankai.edu.cn>
+Date:   Sun Mar 24 19:06:16 2024 +0800
+
+    a
+
+[33mcommit a2afba28510e200bcb52b2c86ea1daaa35de0b94[m
+Author: lhz191 <2212478@mail.nankai.edu.cn>
+Date:   Sun Mar 24 19:04:40 2024 +0800
+
+    a
+
+[33mcommit 3bce6e51d67e221ec42464a0a43039df62602dfa[m
+Author: lhz191 <2212478@mail.nankai.edu.cn>
+Date:   Sat Mar 16 14:27:14 2024 +0800
+
+    a
