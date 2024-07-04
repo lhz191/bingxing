@@ -23,3 +23,11 @@ arm平台上进行实验的文件，openmp的文件夹里也有：
 
 ![image](https://github.com/lhz191/bingxing/assets/142021438/20e33fba-4024-469b-a7de-358642d465c8)
 
+
+大作业截图：
+综合并行优化K-means：
+![681b6b4b3dea8b8e551b9ac3cbd2204](https://github.com/lhz191/bingxing/assets/142021438/5608a89e-67b4-4b7c-9578-8b46712ebad5)
+迁移到airplane数据集上，聚簇结果与串行算法一致：
+![64d2a3347af6a440baba3177c51f8ea](https://github.com/lhz191/bingxing/assets/142021438/3e62ca5c-90a5-44ae-a9d6-7e305a34db48)
+
+
